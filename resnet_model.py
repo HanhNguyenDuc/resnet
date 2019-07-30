@@ -122,9 +122,9 @@ def resnet_model():
 model = resnet_model()
 model.summary()
 
-model.fit_generator(datagen.flow(X_train, y_train, batch_size = 32), epochs = 100, steps_per_epoch = X_train.shape[0] / 32, validation_data = (X_val, y_val))
-model.fit(X_train, y_train, epochs = 100, batch_size = 32, validation_split = 0.1)
 
+model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = ['accuracy'])
+model.fit_generator(datagen.flow(X_train, y_train, batch_size = 32), epochs = 100, steps_per_epoch = X_train.shape[0] / 32, validation_data = (X_val, y_val))
 loss, acc = model.evaluate(X_test, y_test)
 print('loss: {}, acc: {}'.format(loss, acc))
 
