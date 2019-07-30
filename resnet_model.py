@@ -2,17 +2,26 @@ from keras.layers import *
 from keras.models import *
 from keras.applications.resnet50 import *
 from keras.datasets import cifar10
+from keras.preprocessing.image import ImageDataGenerator
 
 (X_train, y_train), (X_test, y_test) = cifar10.load_data()
 
 X_train = preprocess_input(X_train)
 X_test = preprocess_input(X_test)
-
-IMG_SHAPE = X_train.shape[1:]
 # X_test = X_test / 255
+IMG_SHAPE = X_train.shape[1:]
 
+endp = int(X_train.shape[0] * .9)
+X_val = X_train[endp:]
+y_val = y_train[endp:]
+X_train = X_train[:endp]
+y_train = y_train[:endp]
 
-#Self edited resnet-model
+datagen = ImageDataGenerator(rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    horizontal_flip=True)
+
 def resnet_model():
     input_ = Input(shape = IMG_SHAPE)
     conv_7x7_2 = Conv2D(64, kernel_size = (7, 7), strides = 2, activation = 'relu')(input_)
@@ -113,9 +122,11 @@ def resnet_model():
 model = resnet_model()
 model.summary()
 
-model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = ['accuracy'])
-model.fit(X_train, y_train, epochs = 10, batch_size = 32, validation_split = 0.1)
+model.fit_generator(datagen.flow(X_train, y_train, batch_size = 32), epochs = 100, steps_per_epoch = X_train.shape[0] / 32, validation_data = (X_val, y_val))
+model.fit(X_train, y_train, epochs = 100, batch_size = 32, validation_split = 0.1)
 
 loss, acc = model.evaluate(X_test, y_test)
 print('loss: {}, acc: {}'.format(loss, acc))
 
+
+# model.summary()
